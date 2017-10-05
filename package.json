@@ -20,10 +20,10 @@
   },
   "scripts": {
     "static": "ncp static dist",
-    "build": "webpack -p --env production",
-    "watch": "webpack-dev-server",
-    "dev": "npm run static && npm run watch",
-    "prod": "npm run static && npm run build",
+    "prod": "webpack -p --env production",
+    "dev": "webpack-dev-server",
+    "watch": "npm run static && npm run dev",
+    "build": "npm run static && npm run prod",
     "start": "npm-watch"
   },
   "devDependencies": {
