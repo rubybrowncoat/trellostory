@@ -1,0 +1,30 @@
+{
+  "extends": [
+    "google",
+    "prettier"
+  ],
+  "plugins": [
+    "prettier"
+  ],
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "sourceType": "module"
+  },
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "rules": {
+    "prettier/prettier": ["error", {
+      "printWidth": 95,
+      "singleQuote": true,
+      "trailingComma": "all",
+      "bracketSpacing": true,
+      "semi": false,
+      "jsxBracketSameLine": true
+    }],
+    "no-invalid-this": 0,
+    "require-jsdoc": 0,
+    "no-console": 0
+  }
+}

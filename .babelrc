@@ -1,0 +1,21 @@
+{
+  "presets": [
+    ["es2015", {
+        "modules": false
+    }],
+    ["env", {
+      "targets": {
+        "ie": 10,
+        "browsers": [
+          "last 2 versions"
+        ]
+      },
+      "useBuiltIns": true
+    }]
+  ],
+  "plugins": [
+    ["transform-class-properties", { "spec": true }],
+    ["transform-react-jsx", { "pragma": "h" }],
+    "transform-object-assign"
+  ]
+}
