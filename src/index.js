@@ -1,4 +1,4 @@
-/* global window, localStorage */
+/* global window, document, localStorage */
 
 import { h, app } from 'hyperapp'
 import { router, Link } from '@hyperapp/router'
@@ -22,13 +22,29 @@ const boardId = '58e3966381788412d6cd20c6'
 
 const emit = app({
   state: {
+    snapshots: [],
+    currentSnapshot: false,
+
     lists: {},
     current: '',
+
     stuff: [],
-    status: 'nothing',
+    status: 'initial',
   },
   actions: {
     setCurrent: (state, actions, current) => ({ current }),
+
+    saveSnapshot: (state, actions) => {
+      const snapshots = [...state.snapshots]
+
+      snapshots.push({
+        lists: JSON.parse(JSON.stringify(state.lists)),
+      })
+
+      return { snapshots }
+    },
+
+    viewSnapshot: (state, actions, currentSnapshot) => ({ currentSnapshot }),
 
     addCard: (state, actions, { card, list }) => {
       const lists = Object.assign({}, state.lists)
@@ -103,7 +119,7 @@ const emit = app({
     load: async (state, actions) => {
       actions.populate({
         stuff: {},
-        status: 'loading',
+        status: 'populating',
       })
 
       const localStuff = localStorage.getItem('stuff')
@@ -136,11 +152,13 @@ const emit = app({
 
       actions.populate({
         stuff,
-        status: 'done',
+        status: 'populated',
       })
     },
     slowWalker: (state, actions, index) => {
       const item = state.stuff[index]
+
+      let snapshot = true
 
       switch (item.type) {
         case 'createCard':
@@ -183,12 +201,20 @@ const emit = app({
             }
           }
           break
+
+        default:
+          snapshot = false
+          break
+      }
+
+      if (snapshot) {
+        actions.saveSnapshot()
       }
 
       if (index > 0) {
-        setTimeout(() => emit('slowWalker', index - 1), 150)
+        setTimeout(() => emit('slowWalker', index - 1), 5)
       } else {
-        actions.changeStatus('walked')
+        actions.changeStatus('loaded')
       }
     },
   },
@@ -197,34 +223,83 @@ const emit = app({
       '/',
       (state, actions) => (
         <div class="app">
-          { state.status !== 'done' ? <h2 class="bottoml">{state.status}</h2> : ''}
-          <h3 class="bottomr">{state.current}</h3>
-          {_map(state.lists, list => {
-            return (
-              <div class="cardline">
-                {_map(list.cards, card => {
-                  return (
-                    <div class="carda">
-                      <span class="icon is-success" title={card.name}>
-                        <span class="fa fa-stop fa-lg has-text-warning" />
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-            )
-          })}
-          {state.status === 'walking' ? (
-            ''
+          {state.status !== 'loaded' ? (
+            <h2 class="bottoml">Current Status: {state.status}</h2>
           ) : (
-            <button
-              onclick={() => {
-                actions.changeStatus('walking')
+            ''
+          )}
+          {state.status === 'loading' ? <h3 class="bottomr">{state.current}</h3> : ''}
+          {state.status === 'loaded' ? (
+            <div class="bottomc">
+              <div class="field has-addons">
+                <div class="control is-expanded">
+                  <input
+                    id="snapshot"
+                    class="input is-fullwidth"
+                    type="number"
+                    min="0"
+                    max={state.snapshots.length - 1}
+                    value={state.currentSnapshot || 0}
+                    oninput={({ target }) => {
+                      const value = target.value
 
-                setTimeout(() => emit('slowWalker', state.stuff.length - 1), 150)
-              }}>
-              {state.stuff.length}
-            </button>
+                      if (value < state.snapshots.length) {
+                        actions.viewSnapshot(parseInt(target.value))
+                      }
+                    }}
+                  />
+                </div>
+                <div class="control">
+                  <button
+                    class="button is-danger"
+                    onclick={() => {
+                      actions.viewSnapshot(false)
+                    }}>
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            ''
+          )}
+          {_map(
+            state.currentSnapshot === false
+              ? state.lists
+              : state.snapshots[state.currentSnapshot].lists,
+            list => {
+              return (
+                <div class="cardline" key={list.id}>
+                  {_map(list.cards, card => {
+                    return (
+                      <div class="carda" key={card.id}>
+                        <span class="icon is-success" title={card.name}>
+                          <span class="fa fa-stop fa-lg has-text-warning" />
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            },
+          )}
+          {state.status === 'populated' ? (
+            <section class="hero is-primary is-fullheight">
+              <div class="hero-body">
+                <div
+                  class="container has-text-centered"
+                  onclick={() => {
+                    actions.changeStatus('loading')
+
+                    setTimeout(() => emit('slowWalker', state.stuff.length - 1), 5)
+                  }}>
+                  <h1 class="title is-pointer">Load events?</h1>
+                  <h2 class="subtitle">They are {state.stuff.length}, today</h2>
+                </div>
+              </div>
+            </section>
+          ) : (
+            ''
           )}
         </div>
       ),

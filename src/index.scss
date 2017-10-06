@@ -30,18 +30,26 @@ body * {
   flex: none;
 }
 
-.bottoml, .bottomr {
+.bottoml, .bottomr, .bottomc {
   position: fixed;
-  bottom: 0;
+  bottom: 1em;
   width: 25%;
 }
 
 .bottoml {
-  left: 0;
+  left: 1em;
+}
+
+.bottomc {
+  margin-left: 37.5%;
 }
 
 .bottomr {
-  right: 0;
+  right: 1em;
+}
+
+.is-pointer {
+  cursor: pointer;
 }
 
 body,
