@@ -266,7 +266,9 @@ const emit = app({
           {_map(
             state.currentSnapshot === false
               ? state.lists
-              : state.snapshots[state.currentSnapshot].lists,
+              : state.snapshots[state.currentSnapshot]
+                ? state.snapshots[state.currentSnapshot].lists
+                : {},
             list => {
               return (
                 <div class="cardline" key={list.id}>
